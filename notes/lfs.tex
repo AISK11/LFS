@@ -1,0 +1,149 @@
+\documentclass[10pt, a4paper, onecolumn, oneside, titlepage, openany]{book}
+
+\usepackage[T1]{fontenc}    %% TeX text extended - most European characters
+\usepackage[utf8]{inputenc} %% UTF-8 support
+\usepackage{menukeys}       %% keyboads keys, menu + includes '\definecolor'
+
+\usepackage{hyperref}       %% URL and reference support
+\hypersetup{
+    pdftitle={LFS}
+    colorlinks=true,
+    linkcolor=blue,         %% \ref{}
+    filecolor=magenta,      %% \href{run:./file.txt}{File.txt}
+    urlcolor=cyan,          %% \href{http://www.overleaf.com}{Link}
+    pdfpagemode=FullScreen,
+}
+
+\usepackage{titlesec}       %% chapter formatting (N. CHAPTER-NAME)
+\renewcommand{\chaptername}{}
+\titleformat{\chapter}[hang]{\normalfont\huge\bfseries}{\chaptertitlename\ \thechapter.}{1em}{}
+
+\usepackage{fancyhdr}      %% decorative lines
+\renewcommand{\headrulewidth}{2pt}
+\renewcommand{\footrulewidth}{2pt}
+\pagestyle{fancy}
+\fancyhf{}
+    \chead{\leftmark}
+    \cfoot{\thepage}
+\fancypagestyle{plain}{
+\fancyhf{}
+    \chead{\leftmark}
+    \cfoot{\thepage}
+}
+
+%% table formatting
+\usepackage[format=hang,font=small,labelfont=bf]{caption} %% bold table caption
+\setlength{\arrayrulewidth}{0.5mm}                        %% border
+\setlength{\tabcolsep}{18pt}                              %% space from border (X axis)
+\renewcommand{\arraystretch}{1.5}                         %% space from border (Y axis)
+
+%% colors
+\definecolor{bg}{rgb}{240, 240, 240}
+\definecolor{root}{rgb}{222, 0, 0}
+\definecolor{user}{rgb}{0, 150, 0}
+\definecolor{command}{rgb}{41, 182, 0}
+\definecolor{block}{rgb}{255, 80, 0}
+\definecolor{dir}{rgb}{0, 100, 200}
+\definecolor{file}{rgb}{77, 187, 101}
+\definecolor{comment}{rgb}{0, 182, 182}
+
+%% code formatting
+\usepackage{fancyvrb}
+\renewcommand{\FancyVerbFormatLine}[1]{\colorbox{bg}{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% code formatting - TEST!!!
+%% Docs: https://texdoc.org/serve/listings.pdf/0 ; https://en.m.wikibooks.org/wiki/LaTeX/Source_Code_Listings ; % https://gordonlesti.com/custom-code-highlighting-in-latex/
+\usepackage{listings}
+%\definecolor{black}{rgb}{0, 0, 0}
+%\definecolor{bg}{rgb}{0.98, 0.98, 0.82}
+%\definecolor{user}{rgb}{0.31, 0.49, 0.16}
+%\definecolor{command}{rgb}{0.0, 1.0, 0.0}
+%\definecolor{comment}{rgb}{0.5, 0.5, 0.5}
+%\definecolor{string}{rgb}{0.89, 0.35, 0.13}
+
+%\lstdefinelanguage{linux}{
+%    morekeywords = [1]{root}
+%    morekeywords = [2]{user}
+%    morekeywords = [3]{pwd,cd,ls,mv,cp,rm,mkdir,rmdir,dd,ln,
+%        less,zless,bzless,xzless,more,zmore,bzmore,xzmore,cat,zcat,bzcat,xzcat,grep,zgrep,bzgrep,xzgrep,nl,wc,echo,file,stat,zip,unzip,tar,gzip,gunzip,xz,bzip2,bunzip2,help,man,info,tldr
+%        whoami,id,groups,passwd,chsh,su,sudo,doas,chown,chmod,chgrp,useradd,usermod,userdel,groupadd,groupmod,groupdel,
+%        df,du,mount,umount,chroot,lsblk,blkid,blockdev,badblocks,parted,gdisk,fdisk,cfdisk,cryptsetup,mkfs.fat,fatlabel,mkfs.btrfs,btrfs,truncate,chattr,fallocate,mkswap,swapon,swapoff,mkfs.ext4,
+%        dmesg,lsmod,modprobe,lspci,lsusb,inxi,usbguard},
+%    keywordstyle = [1]\color{command},
+%    keywordstyle = [2]\color{user},
+%    keywordstyle = [3]\color{command},
+%    sensitive = true,
+%    morecomment = [l]{\#},
+%    %morecomment = [s]{/*}{*/},
+%    %morecomment = [s]{/**}{*/},
+%    commentstyle = \color{comment},
+%    morestring = [b]",
+%    morestring = [b]',
+%    stringstyle = \color{string},
+%    backgroundcolor = \color{bg},
+%}
+
+%\lstset{
+%  basicstyle = \footnotesize,        % the size of the fonts that are used for the code
+%  breakatwhitespace = false,         % sets if automatic breaks should only happen at whitespace
+%  breaklines = true,                 % sets automatic line breaking
+%  captionpos = b,                    % sets the caption-position to bottom
+%  escapeinside = {\%*}{*)},          % if you want to add LaTeX within your code
+%  extendedchars = true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+%  firstnumber = 0,                % start line enumeration with line 1000
+%  frame = single,	                   % adds a frame around the code
+%  keepspaces = true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+%  language = Octave,                 % the language of the code
+%  morekeywords = {*,...},            % if you want to add more keywords to the set
+%  numbers = left,                    % where to put the line-numbers; possible values are (none, left, right)
+%  numbersep = 5pt,                   % how far the line-numbers are from the code
+%  numberstyle = \tiny\color{black}, % the style that is used for the line-numbers
+%  rulecolor = \color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+%  showspaces = false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+%  showstringspaces = false,          % underline spaces within strings only
+%  showtabs = false,                  % show tabs within strings adding particular underscores
+%  stepnumber = 1,                    % the step between two line-numbers. If it's 1, each line will be numbered
+%  tabsize = 4,	                   % sets default tabsize to 2 spaces
+%  basicstyle={\small},
+%  identifierstyle={\small},
+%  commentstyle={\small\itshape},
+%  keywordstyle={\small\bfseries},
+%  ndkeywordstyle={\small},
+%  stringstyle={\small\ttfamily},
+%  frame={tb},
+%  breaklines=true,
+%  columns=[l]{fullflexible},
+%  numbers=left,
+%  xrightmargin=0em,
+%  xleftmargin=3em,
+%  numberstyle={\scriptsize},
+%  stepnumber=1,
+%  numbersep=1em,
+%  lineskip=-0.5ex,
+%}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% title page '\maketitle'
+\title{\textbf{LFS}}
+\author{AISK11}
+\date{April 2022}
+
+%% LaTeX content
+\begin{document}
+\maketitle
+\tableofcontents
+
+\chapter{}
+
+
+\chapter{Reference}
+\section{Linux From Scratch}
+\begin{itemize}
+    \item \textbf{Homepage:} \url{https://www.linuxfromscratch.org/}
+    \item \textbf{LFS:} \url{https://www.linuxfromscratch.org/lfs/view/stable/}
+    \item \textbf{BFLS:}  \url{https://www.linuxfromscratch.org/blfs/downloads/stable/BLFS-BOOK-11.1-nochunks.html}
+\end{itemize}
+
+
+\end{document}
