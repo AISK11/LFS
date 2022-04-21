@@ -6,19 +6,19 @@
 
 \usepackage{hyperref}       %% URL and reference support
 \hypersetup{
-    pdftitle={LFS}
     colorlinks=true,
     linkcolor=blue,         %% \ref{}
     filecolor=magenta,      %% \href{run:./file.txt}{File.txt}
     urlcolor=cyan,          %% \href{http://www.overleaf.com}{Link}
     pdfpagemode=FullScreen,
+    pdftitle={LFS}
 }
 
 \usepackage{titlesec}       %% chapter formatting (N. CHAPTER-NAME)
 \renewcommand{\chaptername}{}
 \titleformat{\chapter}[hang]{\normalfont\huge\bfseries}{\chaptertitlename\ \thechapter.}{1em}{}
 
-\usepackage{fancyhdr}      %% decorative lines
+\usepackage{fancyhdr}       %% decorative lines
 \renewcommand{\headrulewidth}{2pt}
 \renewcommand{\footrulewidth}{2pt}
 \pagestyle{fancy}
@@ -38,14 +38,14 @@
 \renewcommand{\arraystretch}{1.5}                         %% space from border (Y axis)
 
 %% colors
-\definecolor{bg}{rgb}{240, 240, 240}
-\definecolor{root}{rgb}{222, 0, 0}
-\definecolor{user}{rgb}{0, 150, 0}
-\definecolor{command}{rgb}{41, 182, 0}
-\definecolor{block}{rgb}{255, 80, 0}
-\definecolor{dir}{rgb}{0, 100, 200}
-\definecolor{file}{rgb}{77, 187, 101}
-\definecolor{comment}{rgb}{0, 182, 182}
+\definecolor{bg}{RGB}{240, 240, 240}
+\definecolor{root}{RGB}{222, 0, 0}
+\definecolor{user}{RGB}{0, 150, 0}
+\definecolor{command}{RGB}{41, 182, 0}
+\definecolor{block}{RGB}{255, 80, 0}
+\definecolor{dir}{RGB}{0, 100, 200}
+\definecolor{file}{RGB}{77, 187, 101}
+\definecolor{comment}{RGB}{0, 182, 182}
 
 %% code formatting
 \usepackage{fancyvrb}
@@ -134,15 +134,216 @@
 \maketitle
 \tableofcontents
 
-\chapter{}
+\chapter{Disk Preparation}
+\section{Theory}
+\begin{itemize}
+    \item \textbf{Sector:} smallest unit size on disk. 512 or 4096 bytes (Advanced Format). 4096 Advanced Format disks have usually 512-byte conversion firmware.
+    \item \textbf{Block:} allocation size the FS uses. Cannot be smaller than size of the sector. Can be group of sectors (4096b: 8 x 512b sectors).
+    \begin{itemize}
+        \item \textbf{512b =} good for lot of small files. More blocks = more metadata.
+        \item \textbf{4096b =}  good for larger files, less metadata. Waste if there are mostly small files.
+    \end{itemize}
+\end{itemize}
+
+\section{Reconnaissance}
+\begin{itemize}
+    \item \textbf{Find block devices:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{user}{user\$} \textcolor{command}{lsblk} [-ap | -apf]
+\textcolor{root}{root#} \textcolor{command}{fdisk -l} [\textcolor{block}{/dev/sdX}]
+\textcolor{root}{root#} \textcolor{command}{blkid}
+\end{Verbatim}
+\item \textbf{Raw block device info:}
+    \begin{itemize}
+        \item \textbf{Disk physical sector size:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{blockdev} [-v] --getpbsz <\textcolor{block}{/dev/sdX[Y]}>
+\end{Verbatim}
+        \item \textbf{Disk logical sector size (usually 512):}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{blockdev} [-v] --getss <\textcolor{block}{/dev/sdX[Y]}>
+\end{Verbatim}
+        \item \textbf{Disk size in bytes:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{blockdev} [-v] --getsize64 <\textcolor{block}{/dev/sdX[Y]}>
+\end{Verbatim}
+    \item \textbf{Check if disk is readonly (1 = ro, 0 = rw):}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{blockdev} [-v] --getro <\textcolor{block}{/dev/sdX[Y]}>
+\end{Verbatim}
+    \end{itemize}
+    \item \textbf{List partitions:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{parted} -s <\textcolor{block}{/dev/sdX}> (p)rint [free]
+\end{Verbatim}
+\end{itemize}
+
+\section{Health Check}
+\begin{itemize}
+    \item \textbf{Check bad sectors:}
+    \begin{enumerate}
+        \item \textbf{Unmount FS!}
+        \item \textbf{Check for bad blocks:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{badblocks} [-b 4096] [-w [-t 0xaa]] [-v] [-s]
+<\textcolor{block}{/dev/sdX[Y]}> | \textcolor{command}{tee} -a <\textcolor{file}{OUTPUT_FILE}>
+\end{Verbatim}
+    \end{enumerate}
+\end{itemize}
+
+
+\section{Partitioning}
+\begin{enumerate}
+    \item \textbf{Umount every FS from the disk that is going to be partitioned!}
+    \item \textbf{Create partitions:}
+    \begin{enumerate}
+        \item \textbf{Enter cfdisk:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{cfdisk} -z <\textcolor{block}{/dev/sdX}>
+\end{Verbatim}
+        \item \textbf{Create partition table:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{cfdisk>} \textcolor{command}{gpt} (Enter)
+\end{Verbatim}
+        \item \textbf{Create EFI partition:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{cfdisk>} \textcolor{command}{n}
+\textcolor{root}{cfdisk>} \textcolor{command}{550MiB}
+\textcolor{root}{cfdisk>} \textcolor{command}{t}
+\textcolor{root}{cfdisk>} \textcolor{command}{EFI System}
+\end{Verbatim}
+        \item \textbf{Create LUKS partition:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{cfdisk>} \textcolor{command}{n}
+\textcolor{root}{cfdisk>} \textcolor{command}{} (Enter)
+\end{Verbatim}
+        \item \textbf{Write changes:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{cfdisk>} \textcolor{command}{W}
+\textcolor{root}{cfdisk>} \textcolor{command}{yes}
+\end{Verbatim}
+        \item \textbf{Quit cfdisk:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{cfdisk>} \textcolor{command}{Q}
+\end{Verbatim}
+        \item \textbf{Name partitions:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{parted} -s <\textcolor{block}{/dev/sdX}> name 1 ESP
+\textcolor{root}{root#} \textcolor{command}{parted} -s <\textcolor{block}{/dev/sdX}> name 2 LUKS
+\end{Verbatim}
+    \end{enumerate}
+    \item \textbf{Create filesystems:}
+    \begin{enumerate}
+        \item \textbf{ESP (VFAT32):}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{wipefs} -a <\textcolor{block}{/dev/sdX1}>
+\textcolor{root}{root#} \textcolor{command}{mkfs.vfat} -F 32 <\textcolor{block}{/dev/sdX1}>
+\textcolor{root}{root#} \textcolor{command}{fatlabel} <\textcolor{block}{/dev/sdX1}> <ESP>
+\textcolor{root}{root#} \textcolor{command}{fatlabel} -i <\textcolor{block}{/dev/sdX1}> <00000001>
+[\textcolor{root}{root#} \textcolor{command}{fsck.vfat} [-v] <\textcolor{block}{/dev/sdX1}> [; \textcolor{command}{echo} \$?]]
+\end{Verbatim}
+        \item \textbf{LUKS:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{wipefs} -a <\textcolor{block}{/dev/sdX2}>
+\textcolor{root}{root#} \textcolor{command}{cryptsetup} luksFormat --type luks2 --label <LUKS> <\textcolor{block}{/dev/sdX2}>
+> YES
+> <NEW_LUKS_PASSWORD>
+> <NEW_LUKS_PASSWORD (VERIFY)>
+\textcolor{root}{root#} \textcolor{command}{cryptsetup} open --type luks2 <\textcolor{block}{/dev/sdX2}> <luks-root>
+> <PASSWORD>
+\textcolor{root}{root#} \textcolor{command}{mkfs.btrfs} <\textcolor{block}{/dev/mapper/luks-root}>
+\textcolor{root}{root#} \textcolor{command}{btrfs} filesystem label <\textcolor{block}{/dev/mapper/luks-root}> <LUKS-ROOT>
+[\textcolor{root}{root#} \textcolor{command}{btrfs} check -p <\textcolor{block}{/dev/mapper/luks-root}> [| \textcolor{command}{echo} \$?]]
+\end{Verbatim}
+    \end{enumerate}
+\end{enumerate}
+
+
+\chapter{LFS Installation}
+\section{Mounting}
+\begin{enumerate}
+    \item \textbf{Create mount directory:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{mkdir} -p \textcolor{dir}{/mnt/lfs/}
+\end{Verbatim}
+    \item \textbf{Mount root FS:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{mount} \textcolor{block}{/dev/mapper/luks-root} \textcolor{dir}{/mnt/lfs/}
+\end{Verbatim}
+\end{enumerate}
+
+\section{Basic Packages}
+\begin{enumerate}
+    \item \textbf{Create source code dir:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{mkdir} -p \textcolor{dir}{/mnt/lfs/sources/}
+\textcolor{root}{root#} \textcolor{command}{chmod} 1777 \textcolor{dir}{/mnt/lfs/sources/}
+\end{Verbatim}
+\end{enumerate}
+
+
+\chapter{Cheat Sheets}
+\section{LUKS}
+\label{cheatsheet_luks}
+\begin{itemize}
+    \item \textbf{Open:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{cryptsetup} open --type luks <\textcolor{block}{/dev/sdX2}> <luks>
+> <PASSWORD>
+\end{Verbatim}
+    \item \textbf{Close:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{cryptsetup} close <luks>
+\end{Verbatim}
+    \item \textbf{Header:}
+    \begin{enumerate}
+        \item \textbf{See LUKS header:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{cryptsetup} luksDump <\textcolor{block}{/dev/sdX2}>
+\end{Verbatim}
+        \item \textbf{Make LUKS header backup:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{cryptsetup} luksHeaderBackup <\textcolor{block}{/dev/sdX2}>
+--header-backup-file <\textcolor{file}{FILE}>
+\end{Verbatim}
+        \item \textbf{Destroy LUKS header:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{cryptsetup} luksErase <\textcolor{block}{/dev/sdX2}>
+> YES
+\end{Verbatim}
+        \item \textbf{Restore LUKS header:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{cryptsetup} luksHeaderRestore <\textcolor{block}{/dev/sdX2}>
+--header-backup-file <\textcolor{file}{FILE}>
+> YES
+\end{Verbatim}
+    \end{enumerate}
+    \item \textbf{Passwords:}
+    \begin{itemize}
+        \item \textbf{Change password:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{cryptsetup} luksChangeKey <\textcolor{block}{/dev/sdX2}>
+> <OLD_PASSWORD>
+> <NEW_PASSWORD>
+> <NEW_PASSWORD (VERIFY)>
+\end{Verbatim}
+    \end{itemize}
+\end{itemize}
 
 
 \chapter{Reference}
+Current progress: \url{https://www.linuxfromscratch.org/lfs/view/stable/chapter03/packages.html}
 \section{Linux From Scratch}
 \begin{itemize}
     \item \textbf{Homepage:} \url{https://www.linuxfromscratch.org/}
     \item \textbf{LFS:} \url{https://www.linuxfromscratch.org/lfs/view/stable/}
-    \item \textbf{BFLS:}  \url{https://www.linuxfromscratch.org/blfs/downloads/stable/BLFS-BOOK-11.1-nochunks.html}
+    \item \textbf{LFS multilib fork:} \url{https://www.linuxfromscratch.org/~thomas/multilib/index.html}
+    \item \textbf{BFLS:} \url{https://www.linuxfromscratch.org/blfs/downloads/stable/BLFS-BOOK-11.1-nochunks.html}
+\end{itemize}
+
+\section{Disks}
+\begin{itemize}
+    \item \textbf{FS comparison:} \url{https://en.wikipedia.org/wiki/Comparison_of_file_systems}
 \end{itemize}
 
 
