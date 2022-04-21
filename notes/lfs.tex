@@ -238,22 +238,34 @@
 \begin{Verbatim}[commandchars=\\\{\}]
 \textcolor{root}{root#} \textcolor{command}{wipefs} -a <\textcolor{block}{/dev/sdX1}>
 \textcolor{root}{root#} \textcolor{command}{mkfs.vfat} -F 32 <\textcolor{block}{/dev/sdX1}>
-\textcolor{root}{root#} \textcolor{command}{fatlabel} <\textcolor{block}{/dev/sdX1}> <ESP>
-\textcolor{root}{root#} \textcolor{command}{fatlabel} -i <\textcolor{block}{/dev/sdX1}> <00000001>
-[\textcolor{root}{root#} \textcolor{command}{fsck.vfat} [-v] <\textcolor{block}{/dev/sdX1}> [; \textcolor{command}{echo} \$?]]
+\textcolor{root}{root#} \textcolor{command}{fatlabel} <\textcolor{block}{/dev/sdX1}> ESP
+\textcolor{root}{root#} \textcolor{command}{fatlabel} -i <\textcolor{block}{/dev/sdX1}> 00000001
+\textcolor{root}{root#} \textcolor{command}{fsck.vfat} -v <\textcolor{block}{/dev/sdX1}> ; \textcolor{command}{echo} \$?
 \end{Verbatim}
         \item \textbf{LUKS:}
 \begin{Verbatim}[commandchars=\\\{\}]
 \textcolor{root}{root#} \textcolor{command}{wipefs} -a <\textcolor{block}{/dev/sdX2}>
-\textcolor{root}{root#} \textcolor{command}{cryptsetup} luksFormat --type luks2 --label <LUKS> <\textcolor{block}{/dev/sdX2}>
-> YES
-> <NEW_LUKS_PASSWORD>
-> <NEW_LUKS_PASSWORD (VERIFY)>
-\textcolor{root}{root#} \textcolor{command}{cryptsetup} open --type luks2 <\textcolor{block}{/dev/sdX2}> <luks-root>
-> <PASSWORD>
-\textcolor{root}{root#} \textcolor{command}{mkfs.btrfs} <\textcolor{block}{/dev/mapper/luks-root}>
-\textcolor{root}{root#} \textcolor{command}{btrfs} filesystem label <\textcolor{block}{/dev/mapper/luks-root}> <LUKS-ROOT>
-[\textcolor{root}{root#} \textcolor{command}{btrfs} check -p <\textcolor{block}{/dev/mapper/luks-root}> [| \textcolor{command}{echo} \$?]]
+\textcolor{root}{root#} \textcolor{command}{cryptsetup} luksFormat --type luks2 --label LUKS
+<\textcolor{block}{/dev/sdX2}>
+\textcolor{root}{>} YES
+\textcolor{root}{>} <NEW_LUKS_PASSWORD>
+\textcolor{root}{>} <NEW_LUKS_PASSWORD (VERIFY)>
+\textcolor{root}{root#} \textcolor{command}{cryptsetup} luksUUID --uuid
+00000000-0000-0000-0000-000000000002 <\textcolor{block}{/dev/sdX2}>
+\textcolor{root}{>} YES
+\textcolor{root}{root#} \textcolor{command}{cryptsetup} open --type luks2 <\textcolor{block}{/dev/sdX2}>
+luks-root
+\textcolor{root}{>} <PASSWORD>
+\end{Verbatim}
+        \item \textbf{Root FS (btrfs):}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{mkfs.btrfs} \textcolor{block}{/dev/mapper/luks-root}
+\textcolor{root}{root#} \textcolor{command}{btrfs} filesystem label \textcolor{block}{/dev/mapper/luks-root}
+LUKS-ROOT
+\textcolor{root}{root#} \textcolor{command}{btrfstune} -U 00000000-0000-0000-0000-000000000003
+<\textcolor{block}{/dev/mapper/luks-root}>
+\textcolor{root}{>} y
+\textcolor{root}{root#} \textcolor{command}{btrfs} check -p \textcolor{block}{/dev/mapper/luks-root} ; \textcolor{command}{echo} \$?
 \end{Verbatim}
     \end{enumerate}
 \end{enumerate}
@@ -262,13 +274,15 @@
 \chapter{LFS Installation}
 \section{Mounting}
 \begin{enumerate}
-    \item \textbf{Create mount directory:}
+    \item \textbf{Mount root fs:}
 \begin{Verbatim}[commandchars=\\\{\}]
 \textcolor{root}{root#} \textcolor{command}{mkdir} -p \textcolor{dir}{/mnt/lfs/}
-\end{Verbatim}
-    \item \textbf{Mount root FS:}
-\begin{Verbatim}[commandchars=\\\{\}]
 \textcolor{root}{root#} \textcolor{command}{mount} \textcolor{block}{/dev/mapper/luks-root} \textcolor{dir}{/mnt/lfs/}
+\end{Verbatim}
+    \item \textbf{Mount ESP partition:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{mkdir} -p \textcolor{dir}{/mnt/lfs/boot/}
+\textcolor{root}{root#} \textcolor{command}{mount} <\textcolor{block}{/dev/sdX1}> \textcolor{dir}{/mnt/lfs/boot/}
 \end{Verbatim}
 \end{enumerate}
 
