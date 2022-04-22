@@ -259,6 +259,7 @@ luks-root
 \end{Verbatim}
         \item \textbf{Root FS (btrfs):}
 \begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{wipefs} -a \textcolor{block}{/dev/mapper/luks-root}
 \textcolor{root}{root#} \textcolor{command}{mkfs.btrfs} \textcolor{block}{/dev/mapper/luks-root}
 \textcolor{root}{root#} \textcolor{command}{btrfs} filesystem label \textcolor{block}{/dev/mapper/luks-root}
 LUKS-ROOT
@@ -346,7 +347,9 @@ LUKS-ROOT
 
 
 \chapter{Reference}
-Current progress: \url{https://www.linuxfromscratch.org/lfs/view/stable/chapter03/packages.html}
+Current progress:
+\newline \url{https://www.linuxfromscratch.org/lfs/view/stable/chapter03/packages.html}
+\newline \url{https://www.youtube.com/watch?v=iKeVxGq4QLw}
 \section{Linux From Scratch}
 \begin{itemize}
     \item \textbf{Homepage:} \url{https://www.linuxfromscratch.org/}
