@@ -134,6 +134,69 @@
 \maketitle
 \tableofcontents
 
+\chapter{System Info}
+%\section{System Hardware}
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|}
+    \hline
+    \textbf{Hardware} & \textbf{Value} \\
+    \hline
+    CPU architecture & amd64\\
+    Multilib (32bit) support& yes\\
+    CPU vendor & intel\\
+    Motherboard & UEFI\\
+    Hard Drive & NVMe\\
+    WiFi & iwlwifi\\
+    GPU & Intel + Nvidia\\
+    \hline
+\end{tabular}
+\caption{System hardware overview.}
+\label{table:1}
+\end{table}
+
+%\section{System Software}
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|}
+    \hline
+    \textbf{Software} & \textbf{Value} \\
+    \hline
+    RAID & -\\
+    LVM & -\\
+    Encryption & LUKS\\
+    Root filesystem & btrfs\\
+    SWAP & RAM + 2 GB (16 GB + 2 GB) [file]\\
+    Bootloader & rEFInd\\
+    Kernel & linux\\
+    Initramfs & dracut\\
+    Init & dinit/runit\\
+    Shell & bash\\
+    Virtualization & ?\\
+    \hline
+\end{tabular}
+\caption{System software overview.}
+\label{table:2}
+\end{table}
+
+%\section{Display Software}
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|}
+    \hline
+    \textbf{Software} & \textbf{Value} \\
+    \hline
+    Display server & Xorg\\
+    Window manager & bspwm\\
+    Desktop environment & -\\
+    Terminal emulator & rxvt-unicode\\
+    \hline
+\end{tabular}
+\caption{Display software overview.}
+\label{table:3}
+\end{table}
+
+
 \chapter{Disk Preparation}
 \section{Theory}
 \begin{itemize}
@@ -245,11 +308,11 @@
         \item \textbf{LUKS:}
 \begin{Verbatim}[commandchars=\\\{\}]
 \textcolor{root}{root#} \textcolor{command}{wipefs} -a <\textcolor{block}{/dev/sdX2}>
-\textcolor{root}{root#} \textcolor{command}{cryptsetup} luksFormat --type luks2 --label LUKS
-<\textcolor{block}{/dev/sdX2}>
+\textcolor{root}{root#} \textcolor{command}{cryptsetup} luksFormat -y --type luks2 <\textcolor{block}{/dev/sdX2}>
 \textcolor{root}{>} YES
 \textcolor{root}{>} <NEW_LUKS_PASSWORD>
 \textcolor{root}{>} <NEW_LUKS_PASSWORD (VERIFY)>
+\textcolor{root}{root#} \textcolor{command}{cryptsetup} config --label LUKS <\textcolor{block}{/dev/sdX2}>
 \textcolor{root}{root#} \textcolor{command}{cryptsetup} luksUUID --uuid
 00000000-0000-0000-0000-000000000002 <\textcolor{block}{/dev/sdX2}>
 \textcolor{root}{>} YES
@@ -269,6 +332,10 @@ LUKS-ROOT
 \textcolor{root}{root#} \textcolor{command}{btrfs} check -p \textcolor{block}{/dev/mapper/luks-root} ; \textcolor{command}{echo} \$?
 \end{Verbatim}
     \end{enumerate}
+    \item \textbf{Finish and clean:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{cryptsetup} close \textcolor{block}{/dev/mapper/luks-root}
+\end{Verbatim}
 \end{enumerate}
 
 
@@ -278,6 +345,9 @@ LUKS-ROOT
     \item \textbf{Mount root fs:}
 \begin{Verbatim}[commandchars=\\\{\}]
 \textcolor{root}{root#} \textcolor{command}{mkdir} -p \textcolor{dir}{/mnt/lfs/}
+\textcolor{root}{root#} \textcolor{command}{cryptsetup} open --type luks2 <\textcolor{block}{/dev/sdX2}>
+luks-root
+\textcolor{root}{>} <PASSWORD>
 \textcolor{root}{root#} \textcolor{command}{mount} \textcolor{block}{/dev/mapper/luks-root} \textcolor{dir}{/mnt/lfs/}
 \end{Verbatim}
     \item \textbf{Mount ESP partition:}
@@ -287,14 +357,72 @@ LUKS-ROOT
 \end{Verbatim}
 \end{enumerate}
 
-\section{Basic Packages}
+\section{Create Unprivileged User}
 \begin{enumerate}
-    \item \textbf{Create source code dir:}
+    \item \textbf{Create lfs user:}
 \begin{Verbatim}[commandchars=\\\{\}]
-\textcolor{root}{root#} \textcolor{command}{mkdir} -p \textcolor{dir}{/mnt/lfs/sources/}
-\textcolor{root}{root#} \textcolor{command}{chmod} 1777 \textcolor{dir}{/mnt/lfs/sources/}
+\textcolor{root}{root#} \textcolor{command}{useradd} -s \textcolor{file}{/bin/bash} -m -k \textcolor{block}{/dev/null} lfs
+\textcolor{root}{root#} \textcolor{command}{passwd} lfs
+\textcolor{root}{>} <NEW_USER_PASSWORD>
+\textcolor{root}{>} <NEW_USER_PASSWORD (VERIFY)>
+\end{Verbatim}
+    \item \textbf{Login as lfs user:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{user}{user\$} \textcolor{command}{su} - lfs
 \end{Verbatim}
 \end{enumerate}
+
+\section{Directory Tree @WIP}
+\begin{enumerate}
+    \item \textbf{Source code:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{mkdir} -p \textcolor{dir}{/mnt/lfs/src/}
+\textcolor{root}{root#} \textcolor{command}{chmod} 1777 \textcolor{dir}{/mnt/lfs/src/}
+\textcolor{root}{root#} \textcolor{command}{chown} lfs:lfs \textcolor{dir}{/mnt/lfs/src/}
+\end{Verbatim}
+
+    \item \textbf{Executables:}
+    \begin{enumerate}
+        \item \textbf{Binaries and libraries:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{mkdir} -p \textcolor{dir}{/mnt/lfs/usr/bin/} \textcolor{dir}{/mnt/lfs/usr/sbin/}
+\textcolor{dir}{/mnt/lfs/usr/lib/} \textcolor{dir}{/mnt/lfs/usr/lib64/} \textcolor{dir}{/mnt/lfs/usr/lib32/}
+\textcolor{root}{root#} \textcolor{command}{ln} -sf \textcolor{dir}{/mnt/lfs/usr/bin/} \textcolor{file}{/mnt/lfs/bin}
+\textcolor{root}{root#} \textcolor{command}{ln} -sf \textcolor{dir}{/mnt/lfs/usr/sbin/} \textcolor{file}{/mnt/lfs/sbin}
+\textcolor{root}{root#} \textcolor{command}{ln} -sf \textcolor{dir}{/mnt/lfs/usr/lib/} \textcolor{file}{/mnt/lfs/lib}
+\textcolor{root}{root#} \textcolor{command}{ln} -sf \textcolor{dir}{/mnt/lfs/usr/lib64/} \textcolor{file}{/mnt/lfs/lib64}
+\textcolor{root}{root#} \textcolor{command}{ln} -sf \textcolor{dir}{/mnt/lfs/usr/lib32/} \textcolor{file}{/mnt/lfs/lib32}
+\end{Verbatim}
+    \item \textbf{C headers:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{mkdir} -p \textcolor{dir}{/mnt/lfs/usr/include/}
+\end{Verbatim}
+    \end{enumerate}
+    \item \textbf{Local hierarchy:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{mkdir} -p \textcolor{dir}{/mnt/lfs/usr/local}
+\end{Verbatim}
+    \item \textbf{Architecture independent files:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{mkdir} -p \textcolor{dir}{/mnt/lfs/usr/share/}
+\end{Verbatim}
+
+    \item \textbf{Devices:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{mkdir} -p \textcolor{dir}{/mnt/lfs/dev/} \textcolor{dir}{/mnt/lfs/mnt/} \textcolor{dir}{/mnt/lfs/media/}
+\end{Verbatim}
+    \item \textbf{Data files:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{mkdir} -p \textcolor{dir}{/mnt/lfs/etc/} \textcolor{dir}{/mnt/lfs/var/} \textcolor{dir}{/mnt/lfs/tmp/}
+\textcolor{dir}{/mnt/lfs/srv/} \textcolor{dir}{/mnt/lfs/opt/}
+\textcolor{root}{root#} \textcolor{command}{chmod} 1777 \textcolor{dir}{/mnt/lfs/tmp/}
+\end{Verbatim}
+    \item \textbf{User directories:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{mkdir} -p \textcolor{dir}{/mnt/lfs/root/} \textcolor{dir}{/mnt/lfs/home/}
+\end{Verbatim}
+\end{enumerate}
+
 
 
 \chapter{Cheat Sheets}
@@ -348,8 +476,8 @@ LUKS-ROOT
 
 \chapter{Reference}
 Current progress:
-\newline \url{https://www.linuxfromscratch.org/lfs/view/stable/chapter03/packages.html}
-\newline \url{https://www.youtube.com/watch?v=iKeVxGq4QLw}
+\newline \url{https://www.linuxfromscratch.org/lfs/view/stable/chapter04/chapter04.html}
+\newline \url{https://www.youtube.com/watch?v=Z3ONQzh7ERc}
 \section{Linux From Scratch}
 \begin{itemize}
     \item \textbf{Homepage:} \url{https://www.linuxfromscratch.org/}
@@ -361,6 +489,17 @@ Current progress:
 \section{Disks}
 \begin{itemize}
     \item \textbf{FS comparison:} \url{https://en.wikipedia.org/wiki/Comparison_of_file_systems}
+\end{itemize}
+
+\section{Linux Filesystem Hierarchy Standard}
+\begin{itemize}
+    \item \textbf{Linux FHS:} \url{https://www.pathname.com/fhs/pub/fhs-2.3.html}
+\end{itemize}
+
+\section{Packages}
+\begin{itemize}
+    \item \textbf{Package info:} \url{https://www.linuxfromscratch.org/lfs/view/stable/prologue/package-choices.html}
+    \item \textbf{Package URLs:} \url{https://www.linuxfromscratch.org/lfs/view/stable/chapter03/packages.html}
 \end{itemize}
 
 
