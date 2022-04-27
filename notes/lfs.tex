@@ -69,6 +69,7 @@
 \lstset{
     language = linux_file,
     basicstyle = \ttfamily,
+    columns=fullflexible,
     keywordstyle = [1],%\color{command},
     keywordstyle = [2]\color{keyword},
     stringstyle = \color{block},
@@ -78,12 +79,14 @@
     firstnumber = 1,
     stepnumber = 1,
     numberstyle = \small\color{file},
-    breaklines = true,
-    breakatwhitespace = false,
     showspaces = false,
     showstringspaces = false,
     showtabs = false,
-    columns=fullflexible,
+    breaklines = true,
+    breakatwhitespace = false,
+    breakindent=0pt,
+    %postbreak=\space,
+    %prebreak=\char92,
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
