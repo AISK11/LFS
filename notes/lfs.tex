@@ -318,7 +318,7 @@ LUKS-ROOT
 \end{enumerate}
 
 
-\chapter{LFS Installation}
+\chapter{LFS Preparation}
 \section{LFS User}
 \begin{enumerate}
     \item \textbf{Create user:}
@@ -374,33 +374,37 @@ luks-root
 
 \section{Directory Tree}
 \begin{enumerate}
-    \item \textbf{Binaries and libraries:}
-\begin{Verbatim}[commandchars=\\\{\}]
-\textcolor{root}{root#} \textcolor{command}{mkdir} -p \textcolor{dir}{/mnt/lfs/usr/\{bin,lib,lib64,lib32\}/}
-\textcolor{user}{user\$} \textcolor{command}{cd} \textcolor{dir}{/mnt/lfs/usr/}
-\textcolor{root}{root#} \textcolor{command}{ln} -sf \textcolor{dir}{bin/} \textcolor{file}{sbin}
-\textcolor{user}{user\$} \textcolor{command}{cd} \textcolor{dir}{/mnt/lfs/}
-\textcolor{root}{root#} \textcolor{command}{ln} -sf \textcolor{dir}{usr/bin/} \textcolor{file}{bin}
-\textcolor{root}{root#} \textcolor{command}{ln} -sf \textcolor{dir}{usr/sbin/} \textcolor{file}{sbin}
-\textcolor{root}{root#} \textcolor{command}{ln} -sf \textcolor{dir}{usr/lib/} \textcolor{file}{lib}
-\textcolor{root}{root#} \textcolor{command}{ln} -sf \textcolor{dir}{usr/lib64/} \textcolor{file}{lib64}
-\textcolor{root}{root#} \textcolor{command}{ln} -sf \textcolor{dir}{usr/lib32/} \textcolor{file}{lib32}
-\end{Verbatim}
-    \item \textbf{Other directories:}
-\begin{Verbatim}[commandchars=\\\{\}]
-\textcolor{root}{root#} \textcolor{command}{mkdir} -p \textcolor{dir}{/mnt/lfs/\{etc,var\}/}
-\end{Verbatim}
-    \item \textbf{Source code and compile tools:}
-\begin{Verbatim}[commandchars=\\\{\}]
-\textcolor{root}{root#} \textcolor{command}{mkdir} -p \textcolor{dir}{/mnt/lfs/\{lfs_sources,lfs_tools\}/}
-\end{Verbatim}
     \item \textbf{Rootless access:}
 \begin{Verbatim}[commandchars=\\\{\}]
 \textcolor{root}{root#} \textcolor{command}{chown} -R lfs:lfs \textcolor{dir}{/mnt/lfs/}
 \end{Verbatim}
+    \item \textbf{Binaries and libraries:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{user}{lfs\$} \textcolor{command}{mkdir} -p \textcolor{dir}{/mnt/lfs/usr/\{bin,lib,lib32\}/}
+\textcolor{user}{lfs\$} \textcolor{command}{cd} \textcolor{dir}{/mnt/lfs/usr/}
+\textcolor{user}{lfs\$} \textcolor{command}{ln} -sf \textcolor{dir}{bin/} \textcolor{file}{sbin}
+\textcolor{user}{lfs\$} \textcolor{command}{ln} -sf \textcolor{dir}{lib/} \textcolor{file}{lib64}
+\textcolor{user}{user\$} \textcolor{command}{cd} \textcolor{dir}{/mnt/lfs/}
+\textcolor{user}{lfs\$} \textcolor{command}{ln} -sf \textcolor{dir}{usr/bin/} \textcolor{file}{bin}
+\textcolor{user}{lfs\$} \textcolor{command}{ln} -sf \textcolor{dir}{usr/sbin/} \textcolor{file}{sbin}
+\textcolor{user}{lfs\$} \textcolor{command}{ln} -sf \textcolor{dir}{usr/lib/} \textcolor{file}{lib}
+\textcolor{user}{lfs\$} \textcolor{command}{ln} -sf \textcolor{dir}{usr/lib64/} \textcolor{file}{lib64}
+\textcolor{user}{lfs\$} \textcolor{command}{ln} -sf \textcolor{dir}{usr/lib32/} \textcolor{file}{lib32}
+\end{Verbatim}
+    \item \textbf{Other directories:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{user}{lfs\$} \textcolor{command}{mkdir} -p \textcolor{dir}{/mnt/lfs/\{etc,var\}/}
+\end{Verbatim}
+    \item \textbf{Source code and compile tools:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{user}{lfs\$} \textcolor{command}{mkdir} -p \textcolor{dir}{/mnt/lfs/\{lfs_sources,lfs_tools\}/}
+\end{Verbatim}
 \end{enumerate}
 
-\section{Building Cross Compiler}
+
+\chapter{Cross Toolchain}
+\section{Binutils}
+\textit{Linker, assembler and tools for handling object files.}
 \begin{enumerate}
     \item \textbf{Download binutils:}
     \begin{itemize}
@@ -434,20 +438,34 @@ luks-root
 \textcolor{user}{lfs\$} \textcolor{command}{tar} xvJf <\textcolor{file}{binutils-X.YY.tar.xz}>
 \textcolor{user}{lfs\$} \textcolor{command}{rm} <\textcolor{file}{binutils-X.YY.tar.xz}>
 \end{Verbatim}
-    \item \textbf{Compile binutils: @WIP}
+    \item \textbf{Compile binutils:}
 \begin{Verbatim}[commandchars=\\\{\}]
-\textcolor{user}{lfs\$} \textcolor{command}{cd} <\textcolor{dir}{/mnt/lfs/lfs_sources/binutils-X.YY}>
-\textcolor{user}{lfs\$} \textcolor{command}{mkdir} \textcolor{dir}{build/}> && \textcolor{command}{cd} \textcolor{dir}{build/}
+\textcolor{user}{lfs\$} \textcolor{command}{mkdir} <\textcolor{dir}{/mnt/lfs/lfs_sources/binutils-X.YY/build/}>
+\textcolor{user}{lfs\$} \textcolor{command}{cd} <\textcolor{dir}{/mnt/lfs/lfs_sources/binutils-X.YY/build/}>
+\textcolor{user}{lfs\$} \textcolor{command}{../configure} --prefix=\textcolor{dir}{/mnt/lfs/lfs_tools/}
+--with-sysroot=\textcolor{dir}{/mnt/lfs/} --target=\$(uname -m)-lfs-linux-gnu
+--disable-nls --disable-werror
+\textcolor{user}{lfs\$} \textcolor{command}{time} \textcolor{command}{make}
+\textcolor{user}{lfs\$} \textcolor{command}{make} install
+\end{Verbatim}
+    \item \textbf{Remove source:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{user}{lfs\$} \textcolor{command}{cd} \textcolor{dir}{/mnt/lfs/lfs_sources/}
+\textcolor{user}{lfs\$} \textcolor{command}{rm} -rf <\textcolor{dir}{binutils-X.YY/}>
 \end{Verbatim}
 \end{enumerate}
 
-
+\section{GCC}
+\textit{C and C++ compilers.}
+\begin{enumerate}
+    \item \textbf{Download mpfr, gmp and mpc:}
+\end{enumerate}
 
 
 
 \chapter{Skipped}
 \begin{itemize}
-    \item \textbf{Download of packages}
+    \item \textbf{Download of packages:} (\url{https://www.linuxfromscratch.org/lfs/view/stable/chapter03/packages.html})
     \item \textbf{Filesystem Hierarchy}
     \item \textbf{Possible wrong build binaries}
     \item \textbf{LFS user bash profile} (\url{https://www.linuxfromscratch.org/lfs/view/stable/chapter04/settingenvironment.html})
