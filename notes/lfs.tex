@@ -460,9 +460,29 @@ luks-root
 
 \section{GCC}
 \textit{C and C++ compilers.}
+\subsection{MPFR}
 \begin{enumerate}
-    \item \textbf{Download mpfr, gmp and mpc:}
+    \item \textbf{Download MPFR:}
+    \begin{itemize}
+        \item \textbf{Webpage:} \url{https://www.mpfr.org/}
+        \item \textbf{Download}
+        \begin{itemize}
+            \item \textbf{Lates release:} \url{https://www.mpfr.org/mpfr-current/}
+            \item \textbf{Previous releases:} \url{https://www.mpfr.org/history.html}
+        \end{itemize}
+    \end{itemize}
+    \item \textbf{Verify MPFR:}
+    \begin{enumerate}
+        \item \textbf{Download MPFR author public PGP key:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{user}{lfs\$} \textcolor{command}{wget} -O <\textcolor{file}{mpfr_key.asc}> \underline{https://www.vinc17.net/key.asc}
+\end{Verbatim}
+
+
+
+    \end{enumerate}
 \end{enumerate}
+
 
 
 
@@ -562,5 +582,120 @@ Current progress:
     \item \textbf{Package URLs:} \url{https://www.linuxfromscratch.org/lfs/view/stable/chapter03/packages.html}
 \end{itemize}
 
+
+\chapter{GPG (OpenPGP)}
+\section{Legend}
+\begin{itemize}
+    \item \textbf{Key Fingerprint:} 160-bit key identifier (0000 1111 2222 3333 4444 BBBB CCCC DDDD EEEE FFFF).
+    \item \textbf{Long Key ID:} last 16 chars of fingerprint (CCCC DDDD EEEE FFFF).
+    \item \textbf{Short Key ID:} last 8 chars of fingerprint (EEEE FFFF).
+    \item \textbf{User ID (UID):} "NAME SURNAME <EMAIL@ADDRESS>"
+\end{itemize}
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|}
+    \hline
+    \textbf{Shortcut} & \textbf{Key} \\
+    \hline
+    pub & PUBlic key\\
+    sub & public SUBkey\\
+    sec & SECret key\\
+    ssb & Secret SuBkey\\
+    uid & User ID\\
+    \hline
+\end{tabular}
+\caption{GPG keys.}
+\label{table:gpg_keys}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Constant} & \textbf{X} & \textbf{Explanation} \\
+    \hline
+    PUBKEY\_USAGE\_SIG & S & key is good for signing \\
+    PUBKEY\_USAGE\_CERT & C & key is good for certifying other signatures\\
+    PUBKEY\_USAGE\_ENC & E & key is good for encryption\\
+    PUBKEY\_USAGE\_AUTH & A & key is good for authentication\\
+    \hline
+\end{tabular}
+\caption{GPG usage flags.}
+\label{table:gpg_usage_flags}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{N} & \textbf{Trust Level} & \textbf{Explanation} \\
+    \hline
+    6 & Ultimate & my own keys\\
+    5 & Full & trust to sign other keys\\
+    4 & Marginal & complex\\
+    3 & & \\
+    2 & & \\
+    \hline
+\end{tabular}
+\caption{GPG trust levels.}
+\label{table:gpg_trust_levels}
+\end{table}
+
+\section{Installation}
+\begin{itemize}
+    \item \textbf{LFS}
+\newline \url{https://www.gnupg.org/download/index.html}
+\end{itemize}
+
+\section{Configuration}
+\begin{enumerate}
+    \item \textbf{Change GPG home dir:}
+\newline Default: \textbf{\textcolor{dir}{\texttildelow/.gnupg/}}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{user}{user\$} GNUPGHOME='<\textcolor{dir}{DIRECTORY/}>'
+\end{Verbatim}
+\end{enumerate}
+
+\section{Create Key Pair}
+\begin{enumerate}
+    \item \textbf{Generate keys:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{user}{user\$} gpg --full-gen-key
+\textcolor{user}{>} (1) RSA and RSA (default)
+\textcolor{user}{>} 4096
+\textcolor{user}{>} 0
+\textcolor{user}{>} y
+\textcolor{user}{>} <NAME> [SURNAME]
+\textcolor{user}{>} <EMAIL>
+\textcolor{user}{>} [COMMENT]
+\textcolor{user}{>} O
+\textcolor{user}{>} <PASSPHRASE>
+\textcolor{user}{>} <PASSPHRASE (VERIFY)>
+\end{Verbatim}
+\end{enumerate}
+
+\section{List Keys}
+\begin{itemize}
+    \item \textbf{List Public keys:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{user}{user\$} \textcolor{command}{gpg} -k [--keyid-format long]
+\end{Verbatim}
+    \item \textbf{List Secret/Private keys:}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{user}{user\$} \textcolor{command}{gpg} -K [--keyid-format long]
+\end{Verbatim}
+\end{itemize}
+
+\section{References}
+\begin{itemize}
+    \item \url{https://gnupg.org/}
+    \item \url{https://wiki.gentoo.org/wiki/GnuPG}
+    \item \url{https://wiki.archlinux.org/title/GnuPG}
+    \item \url{https://www.void.gr/kargig/blog/2013/12/02/creating-a-new-gpg-key-with-subkeys/}
+    \item \url{https://wiki.debian.org/Subkeys}
+    \item \url{https://guides.library.illinois.edu/data_encryption/gpgcheatsheet}
+    \item \url{https://davesteele.github.io/gpg/2014/09/20/anatomy-of-a-gpg-key/}
+\end{itemize}
 
 \end{document}
